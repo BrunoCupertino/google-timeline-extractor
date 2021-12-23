@@ -1,11 +1,14 @@
 package main
 
 import (
+	"encoding/csv"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -64,7 +67,15 @@ type TimeLineObject struct {
 }
 
 func main() {
-	jsonFile, err := os.Open(os.Args[1])
+	file := flag.String("file", "", "path to the file to be read")
+	name := flag.String("name", "*", "name of the location to be used to filter")
+
+	flag.Parse()
+
+	fileValue := *file
+	nameValue := strings.ToLower(*name)
+
+	jsonFile, err := os.Open(fileValue)
 
 	if err != nil {
 		fmt.Println(err)
@@ -81,10 +92,32 @@ func main() {
 
 	json.Unmarshal([]byte(byteValue), &result)
 
+	csvData := [][]string{
+		{"Location", "Start From", "End To", "File"},
+	}
+
 	for i := 0; i < len(result.TimeLineObjects); i++ {
 		pv := result.TimeLineObjects[i].PlaceVisit
-		if pv.Location.Name == os.Args[2] {
-			fmt.Println("from:", pv.Duration.StartTimestampMs.Time().Local(), "to:", pv.Duration.EndTimestampMs.Time().Local(), "=====> diff:", pv.Duration.EndTimestampMs.Time().Sub(pv.Duration.StartTimestampMs.Time()))
+		if nameValue == "*" || strings.Contains(strings.ToLower(pv.Location.Name), nameValue) {
+			// fmt.Printf("location: %s, from:%s, to:%s, diff: =====> %s\n", pv.Location.Name, pv.Duration.StartTimestampMs.Time().Local(), pv.Duration.EndTimestampMs.Time().Local(), pv.Duration.EndTimestampMs.Time().Sub(pv.Duration.StartTimestampMs.Time()))
+			values := []string{pv.Location.Name, pv.Duration.StartTimestampMs.Time().Local().String(), pv.Duration.EndTimestampMs.Time().Local().String(), fileValue}
+			csvData = append(csvData, values)
 		}
 	}
+
+	csvFile, err := os.OpenFile("result.csv", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	csvWriter := csv.NewWriter(csvFile)
+
+	for _, csvRow := range csvData {
+		_ = csvWriter.Write(csvRow)
+	}
+
+	csvWriter.Flush()
+	csvFile.Close()
 }
