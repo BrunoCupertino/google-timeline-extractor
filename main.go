@@ -64,7 +64,7 @@ type TimeLineObject struct {
 }
 
 func main() {
-	jsonFile, err := os.Open("history/2017/2017_JULY.json")
+	jsonFile, err := os.Open(os.Args[1])
 
 	if err != nil {
 		fmt.Println(err)
@@ -83,7 +83,7 @@ func main() {
 
 	for i := 0; i < len(result.TimeLineObjects); i++ {
 		pv := result.TimeLineObjects[i].PlaceVisit
-		if pv.Location.Name == os.Args[1] {
+		if pv.Location.Name == os.Args[2] {
 			fmt.Println("from:", pv.Duration.StartTimestampMs.Time().Local(), "to:", pv.Duration.EndTimestampMs.Time().Local(), "=====> diff:", pv.Duration.EndTimestampMs.Time().Sub(pv.Duration.StartTimestampMs.Time()))
 		}
 	}
