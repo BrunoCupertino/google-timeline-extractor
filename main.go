@@ -83,7 +83,7 @@ func main() {
 
 	for i := 0; i < len(result.TimeLineObjects); i++ {
 		pv := result.TimeLineObjects[i].PlaceVisit
-		if pv.Location.Name == "Banco Modal" {
+		if pv.Location.Name == os.Args[1] {
 			fmt.Println("from:", pv.Duration.StartTimestampMs.Time().Local(), "to:", pv.Duration.EndTimestampMs.Time().Local(), "=====> diff:", pv.Duration.EndTimestampMs.Time().Sub(pv.Duration.StartTimestampMs.Time()))
 		}
 	}
