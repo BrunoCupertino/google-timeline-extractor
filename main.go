@@ -66,6 +66,15 @@ type TimeLineObject struct {
 	PlaceVisit      PlaceVisit             `json:"placeVisit"`
 }
 
+func contains(s []string, str string) bool {
+	for _, v := range s {
+		if strings.Contains(str, v) {
+			return true
+		}
+	}
+	return false
+}
+
 func main() {
 	file := flag.String("file", "", "path to the file to be read")
 	name := flag.String("name", "*", "name of the location to be used to filter")
@@ -73,7 +82,7 @@ func main() {
 	flag.Parse()
 
 	fileValue := *file
-	nameValue := strings.ToLower(*name)
+	namesValue := strings.Split(strings.ToLower(*name), "|")
 
 	jsonFile, err := os.Open(fileValue)
 
@@ -98,8 +107,8 @@ func main() {
 
 	for i := 0; i < len(result.TimeLineObjects); i++ {
 		pv := result.TimeLineObjects[i].PlaceVisit
-		if nameValue == "*" || strings.Contains(strings.ToLower(pv.Location.Name), nameValue) {
-			// fmt.Printf("location: %s, from:%s, to:%s, diff: =====> %s\n", pv.Location.Name, pv.Duration.StartTimestampMs.Time().Local(), pv.Duration.EndTimestampMs.Time().Local(), pv.Duration.EndTimestampMs.Time().Sub(pv.Duration.StartTimestampMs.Time()))
+		if namesValue[0] == "*" || contains(namesValue, strings.ToLower(pv.Location.Name)) {
+			//fmt.Printf("location: %s, from:%s, to:%s, diff: =====> %s\n", pv.Location.Name, pv.Duration.StartTimestampMs.Time().Local(), pv.Duration.EndTimestampMs.Time().Local(), pv.Duration.EndTimestampMs.Time().Sub(pv.Duration.StartTimestampMs.Time()))
 			values := []string{pv.Location.Name, pv.Duration.StartTimestampMs.Time().Local().String(), pv.Duration.EndTimestampMs.Time().Local().String(), fileValue}
 			csvData = append(csvData, values)
 		}
