@@ -78,11 +78,13 @@ func contains(s []string, str string) bool {
 func main() {
 	file := flag.String("file", "", "path to the file to be read")
 	name := flag.String("name", "*", "name of the location to be used to filter")
+	output := flag.String("output", "console", "output format (console / file)")
 
 	flag.Parse()
 
 	fileValue := *file
 	namesValue := strings.Split(strings.ToLower(*name), "|")
+	outputValue := *output
 
 	jsonFile, err := os.Open(fileValue)
 
@@ -101,16 +103,15 @@ func main() {
 
 	json.Unmarshal([]byte(byteValue), &result)
 
-	csvData := [][]string{
+	outputData := [][]string{
 		{"Location", "Start From", "End To", "File"},
 	}
 
 	for i := 0; i < len(result.TimeLineObjects); i++ {
 		pv := result.TimeLineObjects[i].PlaceVisit
 		if namesValue[0] == "*" || contains(namesValue, strings.ToLower(pv.Location.Name)) {
-			//fmt.Printf("location: %s, from:%s, to:%s, diff: =====> %s\n", pv.Location.Name, pv.Duration.StartTimestampMs.Time().Local(), pv.Duration.EndTimestampMs.Time().Local(), pv.Duration.EndTimestampMs.Time().Sub(pv.Duration.StartTimestampMs.Time()))
-			values := []string{pv.Location.Name, pv.Duration.StartTimestampMs.Time().Local().String(), pv.Duration.EndTimestampMs.Time().Local().String(), fileValue}
-			csvData = append(csvData, values)
+			values := []string{pv.Location.Name, pv.Duration.StartTimestampMs.Time().Local().Format("2006-01-02T15:04:05"), pv.Duration.EndTimestampMs.Time().Local().Format("2006-01-02T15:04:05"), fileValue}
+			outputData = append(outputData, values)
 		}
 	}
 
@@ -123,8 +124,12 @@ func main() {
 
 	csvWriter := csv.NewWriter(csvFile)
 
-	for _, csvRow := range csvData {
-		_ = csvWriter.Write(csvRow)
+	for _, entry := range outputData {
+		if outputValue == "file" {
+			_ = csvWriter.Write(entry)
+		} else {
+			fmt.Printf("location: %s, start from:%s, end to:%s, file: %s\n", entry[0], entry[1], entry[2], entry[3])
+		}
 	}
 
 	csvWriter.Flush()
