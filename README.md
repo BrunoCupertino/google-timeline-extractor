@@ -12,7 +12,7 @@ Run main.go to filter your records, these are the valids arguments:
 - name: name used to filter records (to use multiple just add | between words)
 - output: (file/console): using file the filtered records will be present in a csv file called result, console will just print the records on screen.
 
-Examples
+Examples:
 ```
 go run main.go -file "/2019/2019_SEPTEMBER.json" -name "place1" -output console
 ```
